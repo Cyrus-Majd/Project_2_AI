@@ -185,15 +185,16 @@ def play_preset(field, probability_field, preset):
             elif command == "D":
                 print()
             elif command == "U":
+                print()
 
 def main():
     args = parser.parse_args()
     field = make_field(int(args.mat_size[0]))
     probability_field = init_probability_field(field[0], int(args.mat_size[0]))
     print_mat(field[0], probability_field, int(args.mat_size[0]))
-    # play_manually(field, probability_field)
+    play_manually(field, probability_field)
     preset = ["R", "R", "D", "D"]
-    play_preset(field, probability_field, preset)
+    # play_preset(field, probability_field, preset)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Problem 5')
