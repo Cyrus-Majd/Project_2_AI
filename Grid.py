@@ -1,6 +1,6 @@
 import os
 import random
-
+import json
 
 class Grid:
     def __init__(self, row_num = -1, col_num = -1, mapname = None, truthname = None):
@@ -8,7 +8,8 @@ class Grid:
             raise Exception("either no map arguments or both map arguments")
         elif(mapname != None):
             with open(mapname, "r") as f:
-                pass
+                for line in f:
+                    print(json.loads(f))
 
 
         elif((row_num == -1 and col_num != -1) or (row_num != -1 and col_num == -1)):
