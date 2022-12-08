@@ -3,9 +3,16 @@ import random
 
 
 class Grid:
-    def __init__(self, row_num = -1, col_num = -1):
-        if((row_num == -1 and col_num != -1) or (row_num != -1 and col_num == -1)):
-            raise Exception("either no positional arguments or both positional arguments")
+    def __init__(self, row_num = -1, col_num = -1, mapname = None, truthname = None):
+        if(mapname == None and truthname != None or truthname == None and mapname != None):
+            raise Exception("either no map arguments or both map arguments")
+        elif(mapname != None):
+            with open(mapname, "r") as f:
+                pass
+
+
+        elif((row_num == -1 and col_num != -1) or (row_num != -1 and col_num == -1)):
+            raise Exception("either no row/col arguments or both row/col arguments")
         elif(row_num == -1 and col_num == -1):
             preset = ["H", "H", "T", "N", "N", "N", "N", "B", "H"]
             n = 3
@@ -15,9 +22,12 @@ class Grid:
                     self.obstacle_grid[i][j] = preset[(n * i) + j]
 
         else:
-            self.obstacle_grid = [[0] * row_num for _ in range(col_num)]
+            self.obstacle_grid = [[0] * col_num for _ in range(row_num)]
+            
+            
             for i in range(row_num):
                 for j in range(col_num):
+                    
                     rand_val = random.random()
                     if (rand_val < .10):    # Blocked cell
                         self.obstacle_grid[i][j] = "B"
@@ -37,7 +47,7 @@ class Grid:
 
         unblocked = len(self.obstacle_grid) * len(self.obstacle_grid[0]) - bs
         distributed_prob = 1 / unblocked
-        probability_field = [[0] * len(self.obstacle_grid) for _ in range(len(self.obstacle_grid[0]))]
+        probability_field = [[0] * len(self.obstacle_grid[0]) for _ in range(len(self.obstacle_grid))]
         for row in range(len(probability_field)):
             for col in range(len(probability_field[row])):
                 if (self.obstacle_grid[row][col] == "B"):
@@ -139,7 +149,7 @@ class Grid:
             curr_map = f"maps/map{i}"
             if not os.path.exists(curr_map):
                 os.makedirs(curr_map)
-            g = Grid()
+            g = Grid(row_num = 100, col_num = 50)
             g.export_to_dir(curr_map, i)
 
         

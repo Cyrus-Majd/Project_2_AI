@@ -6,7 +6,7 @@ import os
 
 if __name__ == "__main__":
     
-    pass
+    Grid.export_10_maps()
 
         
 
