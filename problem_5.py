@@ -232,17 +232,16 @@ def play_manually(field : Tuple, probability_field : list):
     conditional = True
     while(conditional):
         print_mat(mat, probability_field, len(mat))
-        print("CURRENT POSITION:", currCords, "VALUE:", peek(mat, currCords[0], currCords[1]))
         cmd = input("Next move [U, D, L, R] (Q to quit): ")
         if cmd == "Q":
             exit()
-        elif cmd == "U" and check_up(mat, currCords):
+        elif cmd == "U":
             currCords, probability_field = move_up(currCords, probability_field, mat)
-        elif cmd == "D" and check_down(mat, currCords):
+        elif cmd == "D":
             currCords, probability_field = move_down(currCords, probability_field, mat)
-        elif cmd == "L" and check_left(mat, currCords):
+        elif cmd == "L":
             currCords, probability_field = move_left(currCords, probability_field, mat)
-        elif cmd == "R" and check_right(mat, currCords):
+        elif cmd == "R":
             currCords, probability_field = move_right(currCords, probability_field, mat)
 
 def init_probability_field(mat : list, n : int) -> list:
