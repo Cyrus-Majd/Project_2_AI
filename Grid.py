@@ -47,7 +47,22 @@ class Grid:
         self.obstacle_grid = self.obstacle_grid
         self.probability_field = probability_field
 
+    def run_default_comms_and_obs(self):
+        self.move_right()
+        self.observe("N")
+        self.print_probabilities()
 
+        self.move_right()
+        self.observe("N")
+        self.print_probabilities()
+
+        self.move_down()
+        self.observe("H")
+        self.print_probabilities()
+
+        self.move_down()
+        self.observe("H")
+        self.print_probabilities()
 
     
     def observe(self, letter):
@@ -59,6 +74,79 @@ class Grid:
                     self.probability_field[row][col] *= 0.05
 
         self.probability_field = self.normalize(self.probability_field)
+
+
+    def generate_vector():
+        vector = [0, 0]
+        ud_or_rl = random.randint(0, 1)
+        if(ud_or_rl == 1):
+            #up or down
+            vector[0] = random.choice([-1, 1])
+            vector[1] = 0
+        else:
+            vector[0] = 0
+            vector[1] = random.choice([-1, 1])
+        return vector
+        
+    def generate_truths(self):
+        start_row = random.randint(0, len(self.obstacle_grid) - 1)
+        start_col = random.randint(0, len(self.obstacle_grid[0]) - 1)
+        while(self.obstacle_grid[start_row][start_col] == "B"):
+            start_row = random.randint(0, len(self.obstacle_grid) - 1)
+            start_col = random.randint(0, len(self.obstacle_grid[0]) - 1)
+
+        curr_position = [start_row, start_col]
+        true_positions = []
+        true_movements = []
+        true_observations = []
+        
+        for i in range(100):
+            vec = Grid.generate_vector()
+            possible = [0, 0]
+            possible[0] = curr_position[0] + vec[0]
+            possible[1] = curr_position[1] + vec[1]
+            
+            while(possible[0] < 0 or possible[0] >= len(self.obstacle_grid) or possible[1] < 0 or possible[1] >= len(self.obstacle_grid[0]) or self.obstacle_grid[possible[0]][possible[1]] == "B"):
+                vec = Grid.generate_vector()
+                possible = [0, 0]
+                possible[0] = curr_position[0] + vec[0]
+                possible[1] = curr_position[1] + vec[1]
+
+
+            curr_position = possible
+            
+            true_positions.append((curr_position[0], curr_position[1]))
+
+            if(vec[0] == 1):
+                true_movements.append("U")
+            elif(vec[0] == -1):
+                true_movements.append("D")
+            elif(vec[1] == 1):
+                true_movements.append("R")
+            elif(vec[1] == -1):
+                true_movements.append("L")
+
+            true_observations.append(self.obstacle_grid[curr_position[0]][curr_position[1]])
+
+        return (start_row, start_col, true_positions, true_movements, true_observations)
+            
+                
+
+        
+
+    def export_to_dir(self, filedir, mapnumber):
+        mapname = f"{filedir}/map{mapnumber}"
+        with open(mapname, "w") as f:
+            for arr in self.obstacle_grid:
+                print(arr, file=f)
+        for i in range(1, 11):
+            truthfilename = f"{mapname}truth{i}"
+            start_row, start_col, true_positions, true_movements, true_observations = self.generate_truths()
+            with open(truthfilename, "w") as f:
+                print(f"{start_row}, {start_col}", file=f)
+                print(true_positions, file=f)
+                print(true_movements, file=f)
+                print(true_observations, file=f)
 
                     
 
