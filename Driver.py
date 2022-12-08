@@ -6,7 +6,9 @@ import os
 
 if __name__ == "__main__":
     
-    Grid.export_10_maps()
+    grid = Grid(mapname = "maps/map1/map1.txt")
+    grid.run_from_truth_file("maps/map1/map1truth1.txt")
+    grid.print_probabilities()
 
         
 

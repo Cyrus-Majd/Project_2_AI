@@ -1,16 +1,14 @@
 import os
 import random
-import json
+import ast
 
 class Grid:
-    def __init__(self, row_num = -1, col_num = -1, mapname = None, truthname = None):
-        if(mapname == None and truthname != None or truthname == None and mapname != None):
-            raise Exception("either no map arguments or both map arguments")
-        elif(mapname != None):
+    def __init__(self, row_num = -1, col_num = -1, mapname = None):
+        if(mapname != None):
+            self.obstacle_grid = []
             with open(mapname, "r") as f:
                 for line in f:
-                    print(json.loads(f))
-
+                    self.obstacle_grid.append(ast.literal_eval(line))
 
         elif((row_num == -1 and col_num != -1) or (row_num != -1 and col_num == -1)):
             raise Exception("either no row/col arguments or both row/col arguments")
@@ -58,6 +56,24 @@ class Grid:
 
         self.obstacle_grid = self.obstacle_grid
         self.probability_field = probability_field
+
+
+    def run_from_truth_file(self, truthname):
+         with open(truthname, "r") as f:
+            real_moves_list = ast.literal_eval(next(f))
+            real_position_list = ast.literal_eval(next(f))
+            moves_list = ast.literal_eval(next(f))
+            observations_list = ast.literal_eval(next(f))
+            for move, observation in zip(moves_list, observations_list):
+                if(move == "U"):
+                    self.move_up()
+                elif(move == "D"):
+                    self.move_down()
+                elif(move == "L"):
+                    self.move_left()
+                elif(move == "R"):
+                    self.move_right
+                self.observe(observation)
 
     def run_default_comms_and_obs(self):
         self.move_right()
