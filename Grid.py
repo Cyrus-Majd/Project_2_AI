@@ -1,3 +1,4 @@
+import os
 import random
 
 
@@ -130,7 +131,16 @@ class Grid:
 
         return (start_row, start_col, true_positions, true_movements, true_observations)
             
-                
+
+    #static function 
+    def export_10_maps():
+
+        for i in range(1, 11):
+            curr_map = f"maps/map{i}"
+            if not os.path.exists(curr_map):
+                os.makedirs(curr_map)
+            g = Grid()
+            g.export_to_dir(curr_map, i)
 
         
 

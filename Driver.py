@@ -6,12 +6,7 @@ import os
 
 if __name__ == "__main__":
     
-    for i in range(1, 11):
-        curr_map = f"maps/map{i}"
-        if not os.path.exists(curr_map):
-            os.makedirs(curr_map)
-        g = Grid()
-        g.export_to_dir(curr_map, i)
+    
 
         
 
