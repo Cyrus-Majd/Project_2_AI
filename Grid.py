@@ -156,11 +156,11 @@ class Grid:
 
     def export_to_dir(self, filedir, mapnumber):
         mapname = f"{filedir}/map{mapnumber}"
-        with open(mapname, "w") as f:
+        with open(mapname + ".txt", "w") as f:
             for arr in self.obstacle_grid:
                 print(arr, file=f)
         for i in range(1, 11):
-            truthfilename = f"{mapname}truth{i}"
+            truthfilename = f"{mapname}truth{i}.txt"
             start_row, start_col, true_positions, true_movements, true_observations = self.generate_truths()
             with open(truthfilename, "w") as f:
                 print(f"{start_row}, {start_col}", file=f)
