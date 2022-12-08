@@ -1,32 +1,50 @@
+import random
+
+
 class Grid:
-    def __init__(self, preset = True):
-        if(preset):
+    def __init__(self, row_num = -1, col_num = -1):
+        if((row_num == -1 and col_num != -1) or (row_num != -1 and col_num == -1)):
+            raise Exception("either no positional arguments or both positional arguments")
+        elif(row_num == -1 and col_num == -1):
             preset = ["H", "H", "T", "N", "N", "N", "N", "B", "H"]
             n = 3
-            mat = [[0] * n for _ in range(n)]
+            self.obstacle_grid = [[0] * n for _ in range(n)]
             for i in range(n):
                 for j in range(n):
-                    mat[i][j] = preset[(n * i) + j]
+                    self.obstacle_grid[i][j] = preset[(n * i) + j]
 
-            obstacle_grid = mat
+        else:
+            self.obstacle_grid = [[0] * row_num for _ in range(col_num)]
+            for i in range(row_num):
+                for j in range(col_num):
+                    rand_val = random.random()
+                    if (rand_val < .10):    # Blocked cell
+                        self.obstacle_grid[i][j] = "B"
+                    elif (rand_val < .40):  # Hard to traverse cell
+                        self.obstacle_grid[i][j] = "T"
+                    elif (rand_val < .70):  # Highway cell
+                        self.obstacle_grid[i][j] = "H"
+                    else:                   # Normal cell
+                        self.obstacle_grid[i][j] = "N"
+            
 
         bs = 0
-        for arr in obstacle_grid:
+        for arr in self.obstacle_grid:
             for ele in arr:
                 if(ele == "B"):
                     bs += 1
 
-        unblocked = len(obstacle_grid) * len(obstacle_grid[0]) - bs
+        unblocked = len(self.obstacle_grid) * len(self.obstacle_grid[0]) - bs
         distributed_prob = 1 / unblocked
-        probability_field = [[0] * len(obstacle_grid) for _ in range(len(obstacle_grid[0]))]
+        probability_field = [[0] * len(self.obstacle_grid) for _ in range(len(self.obstacle_grid[0]))]
         for row in range(len(probability_field)):
             for col in range(len(probability_field[row])):
-                if (obstacle_grid[row][col] == "B"):
+                if (self.obstacle_grid[row][col] == "B"):
                     probability_field[row][col] = 0
                 else:
                     probability_field[row][col] = distributed_prob
 
-        self.obstacle_grid = obstacle_grid
+        self.obstacle_grid = self.obstacle_grid
         self.probability_field = probability_field
 
 
@@ -124,3 +142,7 @@ class Grid:
             print(["{0:.4f}".format(a) for a in arr])
         print()
         
+    def print_obstacles(self):
+        for arr in self.obstacle_grid:
+            print(arr)
+        print()
