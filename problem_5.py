@@ -125,21 +125,106 @@ def check_right(mat : list, currCords : list): # Checks if right is a valid move
     else:
         return True
 
-def move_up(currCords : list): # Updates curr cords to move up one.
+def move_up(currCords : list, probability_field: list, obstacle_field: list): # Updates curr cords to move up one.
+    new_prob_field = [[0] * len(probability_field[0]) for _ in range(len(probability_field))]
+    for row in range(len(probability_field)):
+        for col in range(len(probability_field[row])):
+            
+            if(row - 1 < 0 or obstacle_field[row - 1][col] == "B"):
+                new_prob_field[row][col] += probability_field[row][col]
+                continue
+            new_prob_field[row - 1][col] += 0.9 * probability_field[row][col]
+            new_prob_field[row][col] += 0.1 * probability_field[row][col]
+
+    total = 0
+    for arr in new_prob_field:
+        total += sum(arr)
+
+    alpha = 1 / total
+    for row in range(len(new_prob_field)):
+        for col in range(len(new_prob_field[row])):
+            new_prob_field[row][col] *= alpha
+
+            
     currCords[0] -= 1
-    return currCords
+    return (currCords, new_prob_field)
 
-def move_down(currCords : list): # Updates curr cords to move down one.
+def move_down(currCords : list, probability_field: list, obstacle_field: list): # Updates curr cords to move down one.
+    
+    new_prob_field = [[0] * len(probability_field[0]) for _ in range(len(probability_field))]
+
+    for row in range(len(probability_field)):
+        for col in range(len(probability_field[row])):
+            
+            if(row + 1 >= len(probability_field) or obstacle_field[row + 1][col] == "B"):
+                new_prob_field[row][col] += probability_field[row][col]
+                continue
+            new_prob_field[row + 1][col] += 0.9 * probability_field[row][col]
+            new_prob_field[row][col] += 0.1 * probability_field[row][col]
+
+
+    total = 0
+    for arr in new_prob_field:
+        total += sum(arr)
+
+    alpha = 1 / total
+    for row in range(len(new_prob_field)):
+        for col in range(len(new_prob_field[row])):
+            new_prob_field[row][col] *= alpha
+
     currCords[0] += 1
-    return currCords
+    return (currCords, new_prob_field)
 
-def move_left(currCords : list): # Updates curr cords to move left one.
+def move_left(currCords : list, probability_field: list, obstacle_field: list): # Updates curr cords to move left one.
+
+    new_prob_field = [[0] * len(probability_field[0]) for _ in range(len(probability_field))]
+
+    for row in range(len(probability_field)):
+        for col in range(len(probability_field[row])):
+            
+            if(col - 1 < 0 or obstacle_field[row][col - 1] == "B"):
+                new_prob_field[row][col] += probability_field[row][col]
+                continue
+            new_prob_field[row][col - 1] += 0.9 * probability_field[row][col]
+            new_prob_field[row][col] += 0.1 * probability_field[row][col]
+
+    total = 0
+    for arr in new_prob_field:
+        total += sum(arr)
+
+    alpha = 1 / total
+    for row in range(len(new_prob_field)):
+        for col in range(len(new_prob_field[row])):
+            new_prob_field[row][col] *= alpha
+
     currCords[1] -= 1
-    return currCords
+    return (currCords, new_prob_field)
 
-def move_right(currCords : list): # Updates curr cords to move right one.
+def move_right(currCords : list, probability_field: list, obstacle_field: list): # Updates curr cords to move right one.
+
+    new_prob_field = [[0] * len(probability_field[0]) for _ in range(len(probability_field))]
+
+    for row in range(len(probability_field)):
+        for col in range(len(probability_field[row])):
+            
+            if(col + 1 >= len(probability_field[row]) or obstacle_field[row][col + 1] == "B"):
+                new_prob_field[row][col] += probability_field[row][col]
+                continue
+            new_prob_field[row][col + 1] += 0.9 * probability_field[row][col]
+            new_prob_field[row][col] += 0.1 * probability_field[row][col]
+
+
+    total = 0
+    for arr in new_prob_field:
+        total += sum(arr)
+
+    alpha = 1 / total
+    for row in range(len(new_prob_field)):
+        for col in range(len(new_prob_field[row])):
+            new_prob_field[row][col] *= alpha
+
     currCords[1] += 1
-    return currCords
+    return (currCords, new_prob_field)
 
 def play_manually(field : Tuple, probability_field : list):
     mat = field[0]
@@ -152,13 +237,13 @@ def play_manually(field : Tuple, probability_field : list):
         if cmd == "Q":
             exit()
         elif cmd == "U" and check_up(mat, currCords):
-            currCords = move_up(currCords)
+            currCords, probability_field = move_up(currCords, probability_field, mat)
         elif cmd == "D" and check_down(mat, currCords):
-            currCords = move_down(currCords)
+            currCords, probability_field = move_down(currCords, probability_field, mat)
         elif cmd == "L" and check_left(mat, currCords):
-            currCords = move_left(currCords)
+            currCords, probability_field = move_left(currCords, probability_field, mat)
         elif cmd == "R" and check_right(mat, currCords):
-            currCords = move_right(currCords)
+            currCords, probability_field = move_right(currCords, probability_field, mat)
 
 def init_probability_field(mat : list, n : int) -> list:
     probability_field = [[0] * n for _ in range(n)]
