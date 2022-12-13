@@ -10,7 +10,6 @@ class Grid:
             with open(mapname, "r") as f:
                 for line in f:
                     self.obstacle_grid.append(ast.literal_eval(line))
-
         elif (row_num == -1 and col_num != -1) or (row_num != -1 and col_num == -1):
             raise Exception("either no row/col arguments or both row/col arguments")
         elif row_num == -1 and col_num == -1:
@@ -20,7 +19,6 @@ class Grid:
             for i in range(n):
                 for j in range(n):
                     self.obstacle_grid[i][j] = preset[(n * i) + j]
-
         else:
             self.obstacle_grid = [[" "] * col_num for _ in range(row_num)]
 
@@ -44,7 +42,7 @@ class Grid:
                     bs += 1
 
         unblocked = len(self.obstacle_grid) * len(self.obstacle_grid[0]) - bs
-        distributed_prob = 1 / unblocked
+        distributed_prob = 1.0 / unblocked
         probability_field = [[0.0] * len(self.obstacle_grid[0]) for _ in range(len(self.obstacle_grid))]
         for row in range(len(probability_field)):
             for col in range(len(probability_field[row])):
@@ -99,6 +97,7 @@ class Grid:
                     self.probability_field[row][col] *= 0.05
 
         self.probability_field = self.normalize(self.probability_field)
+
 
     def generate_vector(self):
         vector = [0, 0]
@@ -212,7 +211,7 @@ class Grid:
         for row in range(len(self.probability_field)):
             for col in range(len(self.probability_field[row])):
 
-                if (col - 1 < 0 or self.obstacle_grid[row][col - 1] == "B"):
+                if col - 1 < 0 or self.obstacle_grid[row][col - 1] == "B":
                     new_prob_field[row][col] += self.probability_field[row][col]
                     continue
                 new_prob_field[row][col - 1] += 0.9 * self.probability_field[row][col]
