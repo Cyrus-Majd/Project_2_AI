@@ -1,3 +1,4 @@
+import math
 import os
 import random
 import ast
@@ -54,6 +55,31 @@ class Grid:
         self.obstacle_grid = self.obstacle_grid
         self.probability_field = probability_field
 
+    def averageErrorFromTruth(self, truthname) -> list[float]:
+        errDist = []
+        with open(truthname, "r") as f:
+            _ = ast.literal_eval(next(f))
+            real_position_list = ast.literal_eval(next(f))
+            moves_list = ast.literal_eval(next(f))
+            observations_list = ast.literal_eval(next(f))
+            i = 1
+            for move, observation, real_pos in zip(moves_list, observations_list, real_position_list):
+                if move == "U":
+                    self.move_up()
+                elif move == "D":
+                    self.move_down()
+                elif move == "L":
+                    self.move_left()
+                elif move == "R":
+                    self.move_right()
+                self.observe(observation)
+                if i > 5:
+                    val, cX, cY = self.mostProbable()
+                    rpX, rpY = real_pos
+                    errDist.append(math.sqrt((cX - rpX) ** 2 + (cY - rpY) ** 2))
+                i += 1
+        return errDist
+
     def run_from_truth_file(self, truthname):
         with open(truthname, "r") as f:
             real_moves_list = ast.literal_eval(next(f))
@@ -71,18 +97,41 @@ class Grid:
                     self.move_right()
                 self.observe(observation)
 
+    def step(self, inputs, visualization):
+        realPosition, move, observation = inputs
+        rpRow, rpCol = realPosition
+        # Filter.do_filter(self.obstacle_grid, self.probability_field, move, observation)
+        if move == "U":
+            self.move_up()
+        elif move == "D":
+            self.move_down()
+        elif move == "L":
+            self.move_left()
+        elif move == "R":
+            self.move_right()
+        else:
+            print("ERROR")
+        self.observe(observation)
+        visualization.setRealPos(rpRow, rpCol)
+
+    def stepOnce(self, inputs, visualization):
+        self.step(inputs, visualization)
+
     def run_default_comms_and_obs(self):
         self.move_right()
         self.observe("N")
         self.print_probabilities()
+        print("====")
 
         self.move_right()
         self.observe("N")
         self.print_probabilities()
+        print("====")
 
         self.move_down()
         self.observe("H")
         self.print_probabilities()
+        print("====")
 
         self.move_down()
         self.observe("H")
@@ -95,21 +144,7 @@ class Grid:
                     self.probability_field[row][col] *= 0.9
                 else:
                     self.probability_field[row][col] *= 0.05
-
         self.probability_field = self.normalize(self.probability_field)
-
-
-    def generate_vector(self):
-        vector = [0, 0]
-        ud_or_rl = random.randint(0, 1)
-        if ud_or_rl == 1:
-            # up or down
-            vector[0] = random.choice([-1, 1])
-            vector[1] = 0
-        else:
-            vector[0] = 0
-            vector[1] = random.choice([-1, 1])
-        return vector
 
     def generate_truths(self):
         start_row = random.randint(0, len(self.obstacle_grid) - 1)
@@ -124,34 +159,51 @@ class Grid:
         true_observations = []
 
         for i in range(100):
-            vec = self.generate_vector()
+            vec = random.choice([[1, 0], [0, 1], [-1, 0], [0, -1]])  # Wouldn't this do the same as the function?
+            # vec = self.generate_vector()
             possible = [0, 0]
             possible[0] = curr_position[0] + vec[0]
             possible[1] = curr_position[1] + vec[1]
 
             while (possible[0] < 0 or possible[0] >= len(self.obstacle_grid) or possible[1] < 0 or possible[1] >= len(
                     self.obstacle_grid[0]) or self.obstacle_grid[possible[0]][possible[1]] == "B"):
-                vec = self.generate_vector()
+                vec = random.choice([[1, 0], [0, 1], [-1, 0], [0, -1]])
                 possible = [0, 0]
                 possible[0] = curr_position[0] + vec[0]
                 possible[1] = curr_position[1] + vec[1]
 
-            curr_position = possible
+            if random.random() < 0.9:  # 90% chance we move
+                curr_position = possible
 
             true_positions.append((curr_position[0], curr_position[1]))
 
-            if vec[0] == 1:
+            if vec[0] == -1:
                 true_movements.append("U")
-            elif vec[0] == -1:
+            elif vec[0] == 1:
                 true_movements.append("D")
             elif vec[1] == 1:
                 true_movements.append("R")
             elif vec[1] == -1:
                 true_movements.append("L")
 
-            true_observations.append(self.obstacle_grid[curr_position[0]][curr_position[1]])
+            realTerrain = self.obstacle_grid[curr_position[0]][curr_position[1]]
+            true_observations.append(self.randomTerrainObservation(realTerrain))
 
         return start_row, start_col, true_positions, true_movements, true_observations
+
+    def mostProbable(self) -> tuple[float, int, int]:
+        top = (0, -1, -1)
+        for i in range(len(self.probability_field)):
+            for j in range(len(self.probability_field[i])):
+                if self.probability_field[i][j] > top[0]:
+                    top = (self.probability_field[i][j], i, j)
+        return top
+
+    def randomTerrainObservation(self, realTerrain):  # 90% chance we observe the correct terrain type
+        if random.random() < 0.9:
+            return realTerrain
+        else:
+            return random.choice([i for i in ['H', 'N', 'T'] if i != realTerrain])
 
     # static function
     def export_10_maps(self):
@@ -187,7 +239,8 @@ class Grid:
                 new_prob_field[row - 1][col] += 0.9 * self.probability_field[row][col]
                 new_prob_field[row][col] += 0.1 * self.probability_field[row][col]
 
-        self.probability_field = self.normalize(new_prob_field)
+        self.probability_field = new_prob_field
+        # self.probability_field = self.normalize(new_prob_field)
 
     def move_down(self):  # Updates curr cords to move down one.
 
@@ -202,7 +255,8 @@ class Grid:
                 new_prob_field[row + 1][col] += 0.9 * self.probability_field[row][col]
                 new_prob_field[row][col] += 0.1 * self.probability_field[row][col]
 
-        self.probability_field = self.normalize(new_prob_field)
+        self.probability_field = new_prob_field
+        # self.probability_field = self.normalize(new_prob_field)
 
     def move_left(self):  # Updates curr cords to move left one.
 
@@ -217,7 +271,8 @@ class Grid:
                 new_prob_field[row][col - 1] += 0.9 * self.probability_field[row][col]
                 new_prob_field[row][col] += 0.1 * self.probability_field[row][col]
 
-        self.probability_field = self.normalize(new_prob_field)
+        self.probability_field = new_prob_field
+        # self.probability_field = self.normalize(new_prob_field)
 
     def move_right(self):  # Updates curr cords to move right one.
 
@@ -232,7 +287,8 @@ class Grid:
                 new_prob_field[row][col + 1] += 0.9 * self.probability_field[row][col]
                 new_prob_field[row][col] += 0.1 * self.probability_field[row][col]
 
-        self.probability_field = self.normalize(new_prob_field)
+        self.probability_field = new_prob_field
+        # self.probability_field = self.normalize(new_prob_field)
 
     def normalize(self, new_prob_field):
         total = 0
